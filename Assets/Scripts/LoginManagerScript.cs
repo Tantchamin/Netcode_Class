@@ -15,6 +15,8 @@ public class LoginManagerScript : MonoBehaviour
     public string ipAddress = "127.0.0.1";
     public TMP_InputField ipInputField;
     UnityTransport transport;
+    public TMP_InputField joinCodeInput;
+    public string joinCode;
 
     private void setIpAddress()
     {
@@ -90,16 +92,25 @@ public class LoginManagerScript : MonoBehaviour
         //throw new System.NotImplementedException();
     }
 
-    public void Host()
+    public async void Host()
     {
-        setIpAddress();
+        //setIpAddress();
+        if (RelayManagerScript.Instance.IsRelayEnabled)
+        {
+            await RelayManagerScript.Instance.CreateRelay();
+        }
         NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
         NetworkManager.Singleton.StartHost();
     }
 
-    public void Client()
+    public async void Client()
     {
-        setIpAddress();
+        //setIpAddress();
+        joinCode = joinCodeInput.GetComponent<TMP_InputField>().text;
+        if(RelayManagerScript.Instance.IsRelayEnabled && !string.IsNullOrEmpty(joinCode))
+        {
+            await RelayManagerScript.Instance.JoinRelay(joinCode);
+        }
         string userName = userNameInput.GetComponent<TMP_InputField>().text;
         NetworkManager.Singleton.NetworkConfig.ConnectionData =
             System.Text.Encoding.ASCII.GetBytes(userName);
