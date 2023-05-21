@@ -10,6 +10,7 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Netcode;
 using System.Threading.Tasks;
+using ParrelSync;
 
 public class RelayManagerScript : Singleton<RelayManagerScript>
 {
@@ -17,7 +18,12 @@ public class RelayManagerScript : Singleton<RelayManagerScript>
     public bool IsRelayEnabled => Transport != null && Transport.Protocol == UnityTransport.ProtocolType.RelayUnityTransport;
     private async void Start()
     {
-        await UnityServices.InitializeAsync();
+        InitializationOptions options = new InitializationOptions();
+#if UNITY_EDITOR
+        options.SetProfile(ClonesManager.IsClone() ? ClonesManager.GetArgument() : "Primary");
+#endif
+        await UnityServices.InitializeAsync(options);
+
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             AuthenticationService.Instance.SignedIn += () =>
